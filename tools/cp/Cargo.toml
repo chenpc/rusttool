@@ -1,0 +1,8 @@
+[package]
+name = "cp"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils cp(1)"
+
+[dependencies]
+libc.workspace = true

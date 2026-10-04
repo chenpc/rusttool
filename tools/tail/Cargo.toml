@@ -1,0 +1,8 @@
+[package]
+name = "tail"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils tail(1)"
+
+[dependencies]
+libc.workspace = true

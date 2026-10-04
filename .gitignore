@@ -1,0 +1,37 @@
+# Build artifacts. The workspace target directory alone is over a gigabyte.
+/target/
+**/target/
+
+# The kernel and the modules fetched from Alpine's netboot. ENV-SETUP.md section 4
+# has the URLs and the module list; nothing here is ours to publish.
+/qemu-test/assets/vmlinuz-*
+/qemu-test/assets/config-*
+/qemu-test/assets/modules-*/
+
+# The scratch disks the QEMU harness attaches. They are created by run-one.sh on
+# demand and every boot gets a throwaway overlay anyway.
+/qemu-test/scratch/
+
+# Everything pack-initramfs.sh and run-one.sh generate: the initramfs staging
+# tree, the packed image, the guest share, and the per-boot serial logs.
+/qemu-test/tmp/initramfs/
+/qemu-test/tiny.cpio
+/qemu-test/guest-root/
+/qemu-test/logs/
+/qemu-test/probe-ok/
+
+# Downloaded and unpacked on demand: Alpine's modloop, the modules pulled out of
+# it, and the brush shell the guest runs testcases with.
+/qemu-test/tmp/modloop-virt
+/qemu-test/tmp/modloop-x/
+/qemu-test/tmp/netfs-x/
+/qemu-test/shell/install/
+
+# Installed by the agent harness, not part of this project.
+/qemu-test/node_modules/
+/qemu-test/package-lock.json
+
+# Nothing here belongs in a repository.
+*.swp
+*~
+.DS_Store

@@ -1,0 +1,44 @@
+# Detached from the repo-root cargo workspace, same reason as guest-init and
+# probe-ok: a case crate is not a tool and must not be a workspace member.
+[workspace]
+
+[package]
+name = "col-cases"
+version = "0.1.0"
+edition = "2021"
+description = "Guest-side integration tests for /mnt/bin/col"
+# One bin per testcase, declared explicitly so the guest test ids are stable.
+autobins = false
+
+# Cargo crate names may not contain '.', so the bin target of testcase
+# <tool>.<case> is named <tool>_<case>; pack-initramfs.sh installs it on the
+# 9p share as guest-root/tests/<tool>.<case>. Keep the two in sync.
+[[bin]]
+name = "col_plain"
+path = "src/bin/col_plain.rs"
+
+[[bin]]
+name = "col_overstrike"
+path = "src/bin/col_overstrike.rs"
+
+[[bin]]
+name = "col_nobs"
+path = "src/bin/col_nobs.rs"
+
+[[bin]]
+name = "col_spaces"
+path = "src/bin/col_spaces.rs"
+
+[[bin]]
+name = "col_version"
+path = "src/bin/col_version.rs"
+
+[[bin]]
+name = "col_badusage"
+path = "src/bin/col_badusage.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+strip = true

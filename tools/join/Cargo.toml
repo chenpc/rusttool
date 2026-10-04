@@ -1,0 +1,8 @@
+[package]
+name = "join"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils join(1)"
+
+[dependencies]
+libc.workspace = true

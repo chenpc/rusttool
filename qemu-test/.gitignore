@@ -1,0 +1,18 @@
+# Binary environment artifacts (kernel, modules): fetch with the scripts in
+# tmp/ / ENV-SETUP.md, never commit.
+assets/
+# Scratch space for unpack/extract scripts.
+tmp/
+# Serial console logs captured by run-one.sh.
+logs/
+# Packed initramfs produced by pack-initramfs.sh.
+tiny.cpio
+# cargo output for the detached guest-init / probe-ok crates.
+target/
+# cargo install root for the guest-side brush shell (rebuilt by
+# pack-initramfs.sh).
+shell/install/
+# Binaries published into the share: build output, not source.
+guest-root/bin/
+guest-root/tests/*
+!guest-root/tests/.gitkeep

@@ -1,0 +1,8 @@
+[package]
+name = "comm"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils comm(1)"
+
+[dependencies]
+libc.workspace = true

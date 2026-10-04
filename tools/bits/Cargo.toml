@@ -1,0 +1,5 @@
+[package]
+name = "bits"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux bits(1): convert bit masks from/to various formats"

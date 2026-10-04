@@ -1,0 +1,26 @@
+# Detached from the repo-root cargo workspace on purpose: the root Cargo.toml is
+# a virtual workspace whose members are only tools/*, and cargo would refuse to
+# build a package under qemu-test/ that is not listed there. An empty
+# [workspace] table makes this package the root of its own workspace.
+[workspace]
+
+[package]
+name = "guest-init"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal dependency-free static /init for the qemu-test guest (musl, no busybox)"
+
+[dependencies]
+libc = "0.2"
+
+# The guest expects the binary at /init, so rename the artifact.
+[[bin]]
+name = "init"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"
+strip = true
+# unwind (the default) is required: main() catches panics so a failure still
+# prints QEMU-TEST: FAIL(...) and powers the machine off.
+panic = "unwind"

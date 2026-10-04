@@ -1,0 +1,20 @@
+# Guest rc for the qemu-test harness, loaded by brush via --rcfile.
+#
+# brush reads this only in interactive mode, which is what run-shell.sh gets:
+# the guest gives the shell a pty and proxies the serial console into it.
+# Keep it dependency-free -- there is no terminfo database in the guest and no
+# coreutils, only brush builtins plus the tools under test.
+
+# Prompt: cwd, then a marker. \w is the current directory; \$ stays a literal
+# dollar for non-root users.
+PS1='\w\$ '
+
+# Secondary prompt for continuation lines (unbalanced quotes, etc.).
+PS2='> '
+
+# A guest this small has no job control worth speaking of, but errexit and
+# pipefail make a failing command inside a script/test obvious.
+set -o pipefail
+
+# No bell: the console is a serial line and beeps are noise.
+set +o bell_notify 2>/dev/null || true

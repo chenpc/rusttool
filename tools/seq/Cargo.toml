@@ -1,0 +1,9 @@
+[package]
+name = "seq"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils seq(1)"
+
+[dependencies]
+libc.workspace = true
+quoting.workspace = true

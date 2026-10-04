@@ -1,0 +1,44 @@
+# Detached from the repo-root cargo workspace, same reason as guest-init and
+# probe-ok: a case crate is not a tool and must not be a workspace member.
+[workspace]
+
+[package]
+name = "colrm-cases"
+version = "0.1.0"
+edition = "2021"
+description = "Guest-side integration tests for /mnt/bin/colrm"
+# One bin per testcase, declared explicitly so the guest test ids are stable.
+autobins = false
+
+# Cargo crate names may not contain '.', so the bin target of testcase
+# <tool>.<case> is named <tool>_<case>; pack-initramfs.sh installs it on the
+# 9p share as guest-root/tests/<tool>.<case>. Keep the two in sync.
+[[bin]]
+name = "colrm_basic"
+path = "src/bin/colrm_basic.rs"
+
+[[bin]]
+name = "colrm_start"
+path = "src/bin/colrm_start.rs"
+
+[[bin]]
+name = "colrm_noargs"
+path = "src/bin/colrm_noargs.rs"
+
+[[bin]]
+name = "colrm_tabs"
+path = "src/bin/colrm_tabs.rs"
+
+[[bin]]
+name = "colrm_version"
+path = "src/bin/colrm_version.rs"
+
+[[bin]]
+name = "colrm_badop"
+path = "src/bin/colrm_badop.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+strip = true

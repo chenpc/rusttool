@@ -1,0 +1,46 @@
+# Tools published into the guest share (/mnt/bin), one per line.
+#
+# pack-initramfs.sh always builds the tools listed here, on top of any tool it
+# discovers from the case crates (cases/<tool>/) and the shell-case ids
+# (cases-shell/<tool>.<case>.sh). Listing a tool here is what puts it on PATH
+# inside the guest, so it can be used by every testcase and by the interactive
+# shell -- handy for the plain file utilities the harness itself needs.
+#
+# Only names with tools/<name>/Cargo.toml are built; a stale entry is reported.
+
+# --- file plumbing the harness and the testcases rely on ---
+cat
+rm
+mkdir
+rmdir
+cp
+mv
+ln
+touch
+
+# --- reading and slicing ---
+head
+tail
+wc
+seq
+basename
+dirname
+tee
+tr
+cut
+sort
+uniq
+mktemp
+readlink
+nl
+paste
+comm
+expand
+unexpand
+
+# --- inspection ---
+env
+stat
+du
+df
+ls

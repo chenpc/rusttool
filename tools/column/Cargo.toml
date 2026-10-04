@@ -1,0 +1,5 @@
+[package]
+name = "column"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux column(1): format input into columns"

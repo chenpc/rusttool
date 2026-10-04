@@ -1,0 +1,5 @@
+[package]
+name = "line"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux line(1): read one line"

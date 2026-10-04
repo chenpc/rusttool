@@ -1,0 +1,8 @@
+[package]
+name = "rmdir"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of GNU coreutils rmdir(1)"
+
+[dependencies]
+libc.workspace = true

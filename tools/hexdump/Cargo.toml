@@ -1,0 +1,8 @@
+[package]
+name = "hexdump"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux hexdump(1): multi-format file dump"
+
+[dependencies]
+libc.workspace = true

@@ -1,0 +1,8 @@
+[package]
+name = "quoting"
+version = "0.1.0"
+edition = "2021"
+description = "The quoting styles GNU tools use in their diagnostics"
+
+[dependencies]
+libc.workspace = true

@@ -1,0 +1,5 @@
+[package]
+name = "colrm"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux colrm(1): remove columns from input"

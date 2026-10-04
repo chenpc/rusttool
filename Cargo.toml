@@ -1,0 +1,57 @@
+[workspace]
+resolver = "2"
+members = [
+    "tools/fallocate",
+    "tools/dmesg",
+    "tools/lscpu",
+    "tools/rev",
+    "tools/column",
+    "tools/col",
+    "tools/colrm",
+    "tools/bits",
+    "tools/colcrt",
+    "tools/line",
+    "tools/ul",
+    "tools/hexdump",
+    "tools/cat",
+    "tools/rm",
+    "tools/mkdir",
+    "tools/rmdir",
+    "tools/head",
+    "tools/tail",
+    "tools/wc",
+    "tools/seq",
+    "tools/basename",
+    "tools/dirname",
+    "tools/cp",
+    "tools/mv",
+    "tools/touch",
+    "tools/tee",
+    "tools/mktemp",
+    "tools/readlink",
+    "tools/cut",
+    "tools/tr",
+    "tools/sort",
+    "tools/uniq",
+    "tools/ln",
+    "tools/nl",
+    "tools/paste",
+    "tools/comm",
+    "tools/expand",
+    "tools/unexpand",
+    "tools/env",
+    "tools/quoting",
+]
+
+[workspace.dependencies]
+libc = "0.2"
+# The two quoting styles GNU tools use in diagnostics, shared so that each crate
+# does not grow its own copy.
+quoting = { path = "tools/quoting" }
+
+# The guest binaries are static musl executables. Unwinding and the symbol
+# table are both dead weight there: every tool handles its own errors and
+# exits with a status, so nothing ever needs to catch a panic.
+[profile.release]
+strip = true
+panic = "abort"

@@ -1,0 +1,36 @@
+# Detached from the repo-root cargo workspace, same reason as guest-init and
+# probe-ok: a case crate is not a tool and must not be a workspace member.
+[workspace]
+
+[package]
+name = "ul-cases"
+version = "0.1.0"
+edition = "2021"
+description = "Guest-side integration tests for /mnt/bin/ul"
+# One bin per testcase, declared explicitly so the guest test ids are stable.
+autobins = false
+
+# Cargo crate names may not contain '.', so the bin target of testcase
+# <tool>.<case> is named <tool>_<case>; pack-initramfs.sh installs it on the
+# 9p share as guest-root/tests/<tool>.<case>. Keep the two in sync.
+[[bin]]
+name = "ul_dumb"
+path = "src/bin/ul_dumb.rs"
+
+[[bin]]
+name = "ul_indicated"
+path = "src/bin/ul_indicated.rs"
+
+[[bin]]
+name = "ul_ansi"
+path = "src/bin/ul_ansi.rs"
+
+[[bin]]
+name = "ul_version"
+path = "src/bin/ul_version.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+strip = true

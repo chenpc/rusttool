@@ -1,0 +1,40 @@
+# Detached from the repo-root cargo workspace, same reason as guest-init and
+# probe-ok: a case crate is not a tool and must not be a workspace member.
+[workspace]
+
+[package]
+name = "rev-cases"
+version = "0.1.0"
+edition = "2021"
+description = "Guest-side integration tests for /mnt/bin/rev"
+# One bin per testcase, declared explicitly so the guest test ids are stable.
+autobins = false
+
+# Cargo crate names may not contain '.', so the bin target of testcase
+# <tool>.<case> is named <tool>_<case>; pack-initramfs.sh installs it on the
+# 9p share as guest-root/tests/<tool>.<case>. Keep the two in sync.
+[[bin]]
+name = "rev_basic"
+path = "src/bin/rev_basic.rs"
+
+[[bin]]
+name = "rev_nonewline"
+path = "src/bin/rev_nonewline.rs"
+
+[[bin]]
+name = "rev_files"
+path = "src/bin/rev_files.rs"
+
+[[bin]]
+name = "rev_missing"
+path = "src/bin/rev_missing.rs"
+
+[[bin]]
+name = "rev_version"
+path = "src/bin/rev_version.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+strip = true

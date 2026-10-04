@@ -1,0 +1,5 @@
+[package]
+name = "colcrt"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux colcrt(1): filter nroff output for CRT previewing"

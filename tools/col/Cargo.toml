@@ -1,0 +1,5 @@
+[package]
+name = "col"
+version = "0.1.0"
+edition = "2021"
+description = "Clone of util-linux col(1): filter reverse line feeds from input"
