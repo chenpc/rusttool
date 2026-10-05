@@ -11,7 +11,7 @@ done_list=()
 empty_list=()
 for dir in tools/*/; do
   name=${dir#tools/}; name=${name%/}
-  [ -f "$name/Cargo.toml" ] || continue
+  [ -f "tools/$name/Cargo.toml" ] || continue
   lib=$(wc -c < "tools/$name/src/lib.rs" 2>/dev/null || echo 0)
   main=$(wc -c < "tools/$name/src/main.rs" 2>/dev/null || echo 0)
   if [ "$lib" -eq 0 ] && [ "$main" -eq 0 ]; then

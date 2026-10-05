@@ -44,6 +44,49 @@ pub fn take(input: &[u8], count: Count) -> (Vec<u8>, usize) {
     }
 }
 
+/// Streaming form of `take`: feed chunks, get back the bytes that belong to the
+/// first `count` worth of input.
+///
+/// `take` needs the whole input in memory, which is fine for a file but not for a
+/// stream that never ends. `head` must stop as soon as it has its count, so that
+/// `head -n 5 /dev/zero` prints five lines instead of allocating forever.
+pub struct Taker {
+    count: Count,
+    used: u64,
+}
+
+impl Taker {
+    pub fn new(count: Count) -> Self {
+        Taker { count, used: 0 }
+    }
+
+    /// True once the count is satisfied and nothing more should be read.
+    pub fn done(&self) -> bool {
+        match self.count {
+            Count::Bytes(n) => self.used >= n,
+            Count::Lines(n) => self.used >= n,
+        }
+    }
+
+    /// The part of `chunk` that still belongs to the selection. Bytes past the
+    /// count are not returned, so the caller can write them straight out.
+    pub fn push<'a>(&mut self, chunk: &'a [u8]) -> &'a [u8] {
+        let mut end = 0usize;
+        for (index, &byte) in chunk.iter().enumerate() {
+            if self.done() {
+                break;
+            }
+            end = index + 1;
+            if matches!(self.count, Count::Lines(_)) && byte == b'\n' {
+                self.used += 1;
+            } else if matches!(self.count, Count::Bytes(_)) {
+                self.used += 1;
+            }
+        }
+        &chunk[..end]
+    }
+}
+
 /// Parse a count argument: a plain number, `+N`, or `*`/start `-` (all).
 pub fn parse_count(text: &str) -> Option<Count> {
     let trimmed = text.trim_start_matches('+');
@@ -104,6 +147,29 @@ mod tests {
         assert_eq!(parse_count("+3"), Some(Count::Lines(3)));
         assert_eq!(parse_count("7"), Some(Count::Lines(7)));
         assert_eq!(parse_count("x"), None);
+    }
+
+    #[test]
+    fn taker_stops_at_the_count_across_chunks() {
+        let mut t = Taker::new(Count::Lines(2));
+        assert_eq!(t.push(b"ab\ncd"), b"ab\ncd");
+        assert_eq!(t.push(b"\nef\n"), b"\n");
+        assert!(t.done());
+        assert_eq!(t.push(b"gh\n"), b"");
+    }
+
+    #[test]
+    fn taker_byte_mode_stops_mid_line() {
+        let mut t = Taker::new(Count::Bytes(3));
+        assert_eq!(t.push(b"abcdef"), b"abc");
+        assert!(t.done());
+    }
+
+    #[test]
+    fn taker_star_reads_forever() {
+        let mut t = Taker::new(Count::Bytes(u64::MAX));
+        assert_eq!(t.push(b"abc"), b"abc");
+        assert!(!t.done());
     }
 
     #[test]

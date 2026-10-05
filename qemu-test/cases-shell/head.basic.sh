@@ -92,6 +92,15 @@ check "tail two files" '==> a <==
 3
 4' "$(tail -n 2 "$W/a" "$W/b")"
 
+# head must not buffer its input. Under a small address-space cap, an input bigger
+# than the cap still has to work: a tool that read the whole input before selecting
+# would fail here instead of printing the first line. This is what made head grow to
+# 9.6 GB on /dev/zero on the host.
+ulimit -v 16384
+head -c 20000000 /dev/zero | head -n 1 > /tmp/head-buffer-check
+ulimit -v unlimited
+check "head streams, it does not slurp" '20000000' "$(wc -c < /tmp/head-buffer-check)"
+
 rm -r "$W"
 echo "head/tail ok"
 exit 0

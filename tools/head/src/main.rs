@@ -2,7 +2,7 @@
 
 use std::io::{Read, Write};
 
-use head::{header, parse_count, take, Count, Options};
+use head::{header, parse_count, Count, Options, Taker};
 
 const VERSION: &str = "1.0";
 
@@ -160,24 +160,22 @@ fn main() {
 
     for source in sources {
         let label = source.clone().unwrap_or_else(|| "standard input".to_string());
-        let mut data = Vec::new();
-        match &source {
-            None => {
-                if let Err(e) = std::io::stdin().read_to_end(&mut data) {
-                    eprintln!("head: standard input: {}", e);
-                    failed = true;
-                    continue;
-                }
-            }
-            Some(path) => match std::fs::read(path) {
-                Ok(bytes) => data = bytes,
+        // Open the source before printing the header: GNU reports an unopenable
+        // file without ever printing its banner.
+        let reader: Box<dyn Read> = match &source {
+            None => Box::new(std::io::stdin()),
+            Some(path) => match std::fs::File::open(path) {
+                Ok(file) => Box::new(file),
                 Err(e) => {
                     eprintln!("head: cannot open '{}' for reading: {}", path, errno(&e));
                     failed = true;
                     continue;
                 }
             },
-        }
+        };
+        let mut reader = reader;
+        let mut buffer = [0u8; 8192];
+        let mut taker = Taker::new(options.count);
         if show_headers || options.verbose {
             // GNU separates consecutive per-file sections with a blank line.
             if !first {
@@ -186,9 +184,24 @@ fn main() {
             first = false;
             let _ = out.write_all(header(&label).as_bytes());
         }
-        let (piece, _) = take(&data, options.count);
-        use std::io::Write;
-        let _ = out.write_all(&piece);
+        loop {
+            let read = match reader.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(n) => n,
+                Err(e) => {
+                    eprintln!("head: {}", e);
+                    failed = true;
+                    break;
+                }
+            };
+            let piece = taker.push(&buffer[..read]);
+            if !piece.is_empty() {
+                let _ = out.write_all(piece);
+            }
+            if taker.done() {
+                break;
+            }
+        }
     }
     let _ = out.flush();
     if failed {

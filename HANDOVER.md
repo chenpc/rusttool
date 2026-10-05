@@ -3,7 +3,7 @@
 > 本文件給下一位接手的人（或下一個 session 的自己）。
 > 環境建置請看 [`qemu-test/ENV-SETUP.md`](qemu-test/ENV-SETUP.md)，本文只講**專案狀態與怎麼做事**。
 >
-> 最後更新：2026-10-04（本輪完成 `nl` 收尾 + `paste`）
+> 最後更新：2026-10-05（本輪立下第 12 節的執行規定，並修掉 `head` 的無界緩衝）
 
 ---
 
@@ -898,3 +898,70 @@ width = MAX (first_width, last_width);
 | `-f` 格式問題 | `format ‘x’ has …` | **沒有** | 1 |
 
 > `seq` 的 exit 是 **1**，不是其他 coreutils 工具慣用的 125。
+
+---
+
+## 12. 執行規定：我們的 binary 不在 host 跑，在 QEMU 裡跑（2026-10-05）
+
+**規定：凡是執行「我們寫的工具」，一律在 QEMU guest 裡跑。**
+不要在本機直接 `./target/debug/<tool>`，也不要用本機 shell 去 probe 我們的 binary。
+
+### 12.1 為什麼
+
+這一輪 `sum-diff.sh` 跑到 OOM，本機被 OOM killer 殺了一個 process：
+
+```
+Out of memory: Killed process 2444 (head) total-vm:16780524kB, anon-rss:9618944kB
+```
+
+原因是 `head` 的 `main.rs` 用 `read_to_end` / `fs::read` **把整個輸入讀進記憶體**再選前 N 個。
+`sums-cases.sh` 的「big file blocks」case 有 `head -c 2000 /dev/zero`，而 `difflib.sh` 把
+`target/debug` 放在 PATH 前面，所以那個 `head` 是我們的 —— 它對一個永遠不會結束的輸入
+無限配置記憶體。本機沒有任何邊界擋住它；guest 有 `-m 256M`。
+
+> 這不是 `head` 一個工具的問題。會「先讀完再選」的 crate 有 18 個：
+> `cat` `colcrt` `comm` `cp` `cut` `dmesg` `expand` `hexdump` `line` `nl` `paste` `sort`
+> `tail` `tr` `ul` `unexpand` `uniq` `wc`。
+> 對一般檔案沒差別，但對 `/dev/zero`、`/dev/urandom`、或一個 fifo 就是無界成長。
+> 之後每個工具都應該用**邊讀邊輸出**的寫法（`head` 已經改成這樣，見 12.3）。
+
+### 12.2 怎麼執行
+
+| 要做的事 | 用什麼 |
+|---|---|
+| probe 我們的 binary、問行為 | `qemu-test/harness/guest-run.sh 'command'`（開一次機，輸出抓回本機檔案） |
+| 整合測試 | `qemu-test/run-one.sh <case-id>` / `run-many.sh` |
+| 單元測試 | `cargo test -p <tool>`（純邏輯，不碰 I/O，留在本機） |
+| differential | 本機跑，但 `difflib.sh` 已經加了 `ulimit -v 524288` |
+
+differential 是這條規定的**唯一例外**，因為 oracle（`/usr/bin/<tool>`）在本機，兩邊必須在
+同一個環境裡比，否則 locale、quoting、訊號編號（見 10.8）會造成假差異。所以 differential
+繼續在本機跑，但**有記憶體上限**：case 撞到上限就 FAIL，而那個 FAIL 是**真缺陷**
+（無界緩衝），不是 harness 的毛病。
+
+`guest-run.sh` 的用法：
+
+```bash
+bash qemu-test/harness/guest-run.sh -o /tmp/ours.txt 'head -c 10 /dev/zero | wc -c'
+```
+
+輸出會經過 serial console 抓回來，NUL byte 不會被吃掉；boot 的雜訊被 marker 擋掉。
+
+### 12.3 `head` 的修法
+
+`lib.rs` 加了一個 `Taker`：`take()` 需要整個輸入，`Taker` 是它的串流版，餵一個 chunk
+回傳「屬於前 N 個的位元組」，`done()` 之後 `main.rs` 就停止讀。
+
+```rust
+let piece = taker.push(&buffer[..read]);
+if !piece.is_empty() { out.write_all(piece); }
+if taker.done() { break; }
+```
+
+`head -n 5 /dev/zero` 現在是「讀到 5 個換行就離開」，不會再長到 9.6 GB。
+
+> 注意：`/dev/zero` 沒有換行，所以 `head -n 3 /dev/zero` 本來就會一直讀 —— 系統工具也一樣。
+> 差別在**記憶體**：GNU 邊讀邊印，我們之前是把全部留下來。
+> `cases-shell/head.basic.sh` 加了一條 case 釘住這件事：`ulimit -v 16384` 之下讀 20 MB 的
+> `/dev/zero`，舊寫法會直接 `out of memory`，串流寫法照常輸出。
+

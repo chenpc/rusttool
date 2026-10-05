@@ -10,6 +10,13 @@ export PATH="/home/chenpc/git/rusttool/target/debug:$PATH"
 
 TOOL=${TOOL:?set TOOL}
 SYS=${SYS:?set SYS}
+
+# A tool that buffers its whole input grows without bound on an endless input such
+# as /dev/zero, and on the host that reaches the OOM killer. Cap the address space
+# so a case like that fails as a case instead of killing the machine; the guest runs
+# the same binaries under -m 256M, so this mirrors that boundary.
+ulimit -v 524288 2>/dev/null || true
+
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 pass=0
