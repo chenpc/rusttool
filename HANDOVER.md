@@ -35,14 +35,18 @@
 | 驗證 | 結果（那一輪的數字，見 2.4 / 2.5 的現況） |
 |---|---|
 | 單元測試（整個 workspace） | 484 passed, 0 failed |
-| differential vs GNU | 983 identical, 3 different |
-| QEMU guest 全新開機 | 55 PASS, 0 FAIL |
+| differential vs GNU | 1562 identical, 3 different |
+| QEMU guest 全新開機 | 61 PASS, 0 FAIL |
 
 那 3 個差異是**系統 util-linux 2.40 沒有 `hexdump -X`**，屬已知項，非缺陷。
 
 更早的 util-linux 工具（`rev` `column` `col` `colrm` `bits` `colcrt` `line` `ul` `hexdump`）
 與第一批 coreutils（`cat` `rm` `mkdir` `rmdir` `head` `tail` `wc` `seq` `basename` `dirname`）
-也已完成，但沒有納入上面那三個數字的統計範圍（見 `qemu-test/tmp/final-tally.sh` 的清單）。
+也已完成，但沒有納入上面那三個數字的統計範圍（見 `qemu-test/harness/final-tally.sh` 的清單）。
+
+**還欠多少個工具不是手數的**：`qemu-test/harness/gen-manifest.sh` 會從 oracle 所在
+package 的檔案清單交叉比對 `tools/`，產生 `MANIFEST.md`。目前 202 個名字：
+38 done / 27 空殼 / 137 完全沒骨架，**還要做 164 個**。
 
 ### 2.2 ~~進行中：`nl`~~ → 已完成，見 2.4
 
@@ -67,7 +71,7 @@
 > 這 28 個空的都在 `Cargo.toml` 的 workspace members 裡（做完就會加進去），
 > 所以 `cargo build --workspace` 會去碰它們，**535 這個單元測試數字不包含空殼**。
 
-man page 已備妥（`qemu-test/tmp/man/*.txt`）：
+man page 已備妥（`qemu-test/harness/man/*.txt`）：
 
 - 有骨架的 11 個：全都有（`paste`、`comm` 已做完，剩 9 個空殼）
 - **只有 man page、沒建骨架**：`unexpand` `md5sum`
@@ -115,6 +119,16 @@ man page 已備妥（`qemu-test/tmp/man/*.txt`）：
 
 4. **`final-tally.sh` 漏了 `nl-diff.sh`**，而且 QEMU 段是讀 `/tmp/qemu-final.log` 的舊結果。
    已加入 `nl-diff.sh`，QEMU 段改成實際 `pack-initramfs.sh` + `run-many.sh` 重跑。
+   現在 `final-tally.sh` 與 `all-diffs.sh` 都改成**自動發現 `*-diff.sh`**，
+   不再維護硬寫清單（舊清單就是漏數字的來源）；被取代的 harness 寫在腳本裡的
+   `SKIP=` 而不是默默消失。
+
+5. **整個驗證設施不在版本控制裡**。`qemu-test/.gitignore` 忽略 `tmp/`，
+   而 20 個 `*-diff.sh`、4 個 `*-fuzz.py`、`difflib.sh`、`final-tally.sh`、
+   render 好的 man page 全住在 `tmp/`。也就是 fresh clone 會拿到所有工具程式碼、
+   卻拿不到任何一個驗證它們的東西，「每工具一 commit、可 bisect」根本做不到。
+   已把這些搬到 `qemu-test/harness/`（入版本控制），`tmp/` 留給一次性
+   probe / fix / tidy 腳本。搬完 differential 基準不變：1562 identical / 3 different。
 
 順手修的兩個 harness／文件問題：
 
@@ -214,7 +228,7 @@ man page 已備妥（`qemu-test/tmp/man/*.txt`）：
 
 `comm` 的手寫 differential 有 79 個 case 全綠，但 fuzz 立刻抓到兩個真 bug
 （訊息順序、共用 stream 的推進順序）。
-`qemu-test/tmp/comm-fuzz.py` 是範本：
+`qemu-test/harness/comm-fuzz.py` 是範本：
 
 - 隨機產生兩個檔案（行數 0~5、含空行、含前綴、含無結尾的行、20% 用 NUL 結尾）
 - 隨機疊加選項（`-1`/`-2`/`-3`/`--total`/`--check-order`/`--nocheck-order`/
@@ -226,7 +240,7 @@ man page 已備妥（`qemu-test/tmp/man/*.txt`）：
 
 ```bash
 cargo build -p comm
-python3 qemu-test/tmp/comm-fuzz.py 1200 7
+python3 qemu-test/harness/comm-fuzz.py 1200 7
 ```
 
 **建議之後每個工具都配一個 fuzzer。** 手寫 case 只能覆蓋你想到的輸入，
@@ -307,12 +321,15 @@ python3 qemu-test/tmp/comm-fuzz.py 1200 7
     ├── run-one.sh / run-many.sh / run-shell.sh
     ├── cases-shell/*.sh    # guest 內的整合測試 case
     ├── logs/               # <case-id>.log（serial）、<case-id>.runner.log
-    └── tmp/                # 所有 harness、probe 腳本、render 好的 man page
-        ├── difflib.sh      # 共用 differential harness
-        ├── *-diff.sh       # 每個工具一份
-        ├── run-cu-cases.sh # 完整 QEMU suite
-        ├── final-tally.sh  # 一次跑完 unit tests + 全部 differential + QEMU
-        └── man/*.txt       # man --nh --nj 的輸出
+    ├── harness/            # 入版本控制的驗證設施（原在 tmp/，2026-10-05 搬過來）
+    │   ├── difflib.sh      # 共用 differential harness
+    │   ├── *-diff.sh       # 每個工具一份
+    │   ├── *-fuzz.py       # 每個工具一份（見 2.7）
+    │   ├── final-tally.sh  # 一次跑完 unit + 全部 differential + QEMU
+    │   ├── all-diffs.sh    # 只跑 differential（會把我們的 binary 放进 PATH）
+    │   ├── gen-manifest.sh # 產生 MANIFEST.md（帳單，不手寫）
+    │   └── man/*.txt       # man --nh --nj 的輸出（實作時的規格來源）
+    └── tmp/                # 一次性 probe / fix / tidy 腳本（gitignore）
 ```
 
 ---
@@ -322,7 +339,7 @@ python3 qemu-test/tmp/comm-fuzz.py 1200 7
 ### 步驟 1：讀 man page
 
 ```bash
-man --nh --nj paste > qemu-test/tmp/man/paste.txt
+man --nh --nj paste > qemu-test/harness/man/paste.txt
 ```
 
 **看不懂、行為可疑時，直接問真的 binary，不要猜：**
@@ -349,7 +366,7 @@ man --nh --nj paste > qemu-test/tmp/man/paste.txt
 
 ### 步驟 4：寫 differential harness
 
-複製 `qemu-test/tmp/nl-diff.sh` 改名字，**先確認 `difflib.sh` 已經把 debug binaries 放進 PATH**（見第 5 節陷阱）。
+複製 `qemu-test/harness/nl-diff.sh` 改名字，**先確認 `difflib.sh` 已經把 debug binaries 放進 PATH**（見第 5 節陷阱）。
 
 fixture 用 `$(printf '%s\n' ...)`，不要用 `printf` 的 `\n\` 手動拼（踩過坑，見第 5 節）。
 
@@ -358,7 +375,7 @@ fixture 用 `$(printf '%s\n' ...)`，不要用 `printf` 的 `\n\` 手動拼（�
 ```bash
 cd /home/chenpc/git/rusttool
 cargo test -p <tool>                          # 單元測試
-cd qemu-test/tmp && bash <tool>-diff.sh       # differential
+cd qemu-test/harness && bash <tool>-diff.sh       # differential
 ```
 
 `VERBOSE=1` 會印出差異細節。**harness 報 0/0（全部失敗）或全綠，先懷疑 harness。**
@@ -384,7 +401,7 @@ bash fail-detail.sh <case-id>
 ### 步驟 7：收尾
 
 ```bash
-cd /home/chenpc/git/rusttool/qemu-test/tmp && bash final-tally.sh
+cd /home/chenpc/git/rusttool/qemu-test/harness && bash final-tally.sh
 ```
 
 ---
@@ -498,7 +515,7 @@ curl -sL https://raw.githubusercontent.com/coreutils/coreutils/v9.4/src/<tool>.c
 7. **`ls` / `stat`**：工作量最大（選項多、輸出格式複雜），建議最後處理
 8. `md5sum`：只有 man page，且需要 hash 實作
 
-> 做下一個工具時，**順便照 `qemu-test/tmp/comm-fuzz.py` 寫一份 fuzzer**（見 2.7）。
+> 做下一個工具時，**順便照 `qemu-test/harness/comm-fuzz.py` 寫一份 fuzzer**（見 2.7）。
 > `comm` 的兩個真 bug 都是 fuzzer 抓的，手寫 case 抓不到。
 
 ---
@@ -509,10 +526,10 @@ curl -sL https://raw.githubusercontent.com/coreutils/coreutils/v9.4/src/<tool>.c
 |---|---|
 | 環境怎麼建 | `qemu-test/ENV-SETUP.md` |
 | 加一個工具要寫什麼 | `tools/cut/src/`、`tools/ln/src/`（最完整的三個範例） |
-| differential 怎麼運作 | `qemu-test/tmp/difflib.sh` |
-| 一次跑完整驗證 | `qemu-test/tmp/final-tally.sh` |
+| differential 怎麼運作 | `qemu-test/harness/difflib.sh` |
+| 一次跑完整驗證 | `qemu-test/harness/final-tally.sh` |
 | guest 怎麼組裝 | `qemu-test/pack-initramfs.sh` |
-| 有哪些 man page | `qemu-test/tmp/man/` |
+| 有哪些 man page | `qemu-test/harness/man/` |
 | 上一輪的完整驗證紀錄 | `/tmp/qemu-final.log`、`qemu-test/logs/` |
 
 > `qemu-test/tmp/` 是**暫存區**，裡面有大量一次性 probe/fix 腳本。
