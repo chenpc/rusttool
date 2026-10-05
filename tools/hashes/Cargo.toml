@@ -1,0 +1,6 @@
+[package]
+name = "hashes"
+version = "0.1.0"
+edition = "2021"
+description = "The digests cksum, sum and the seven *sum tools share"
+[dependencies]

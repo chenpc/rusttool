@@ -41,6 +41,7 @@ members = [
     "tools/unexpand",
     "tools/env",
     "tools/quoting",
+    "tools/hashes",
 ]
 
 [workspace.dependencies]

@@ -35,3 +35,5 @@
 *.swp
 *~
 .DS_Store
+# Agent harness state (goal files, sessions). Not part of the project.
+/.pi/
