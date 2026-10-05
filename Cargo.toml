@@ -42,6 +42,16 @@ members = [
     "tools/env",
     "tools/quoting",
     "tools/hashes",
+    "tools/checksums",
+    "tools/sum",
+    "tools/cksum",
+    "tools/b2sum",
+    "tools/sha512sum",
+    "tools/sha384sum",
+    "tools/sha256sum",
+    "tools/sha224sum",
+    "tools/sha1sum",
+    "tools/md5sum",
 ]
 
 [workspace.dependencies]
@@ -49,6 +59,8 @@ libc = "0.2"
 # The two quoting styles GNU tools use in diagnostics, shared so that each crate
 # does not grow its own copy.
 quoting = { path = "tools/quoting" }
+hashes = { path = "tools/hashes" }
+checksums = { path = "tools/checksums" }
 
 # The guest binaries are static musl executables. Unwinding and the symbol
 # table are both dead weight there: every tool handles its own errors and

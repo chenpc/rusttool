@@ -1,8 +1,8 @@
 [package]
-name = "cksum"
+name = "b2sum"
 version = "0.1.0"
 edition = "2021"
-description = "Clone of GNU coreutils cksum(1)"
+description = "Clone of GNU coreutils b2sum(1)"
 
 [dependencies]
 checksums.workspace = true

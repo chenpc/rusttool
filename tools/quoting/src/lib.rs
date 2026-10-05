@@ -79,7 +79,7 @@ pub fn quote_for(text: &str, fancy: bool) -> String {
             b'\'' if !fancy => out.extend_from_slice(b"\\'"),
             0x07 => out.extend_from_slice(b"\\a"),
             0x08 => out.extend_from_slice(b"\\b"),
-            0x0c => out.extend_from_slice(b"\\f"),
+            0x0c => out.extend_from_slice(b"\\x0C"),
             b'\n' => out.extend_from_slice(b"\\n"),
             b'\r' => out.extend_from_slice(b"\\r"),
             b'\t' => out.extend_from_slice(b"\\t"),
@@ -338,5 +338,84 @@ mod tests {
         set_fancy_quotes(false);
         assert!(!fancy_quotes());
         assert_eq!(quote("x"), "'x'");
+    }
+}
+/// The third quoting style: what a shell would need to quote a word safely.
+/// Unlike `quote`, this one leaves a plain word alone - `md5sum: missing.txt` is
+/// printed bare, while `md5sum: 'a b.txt'` is not. Control characters become
+/// `$'\n'` segments rather than escapes inside the quotes.
+pub fn shell_quote_meta(text: &str) -> String {
+    if !needs_meta(text) {
+        return text.to_string();
+    }
+    let mut out = String::new();
+    let mut run = String::new();
+    for &byte in text.as_bytes() {
+        if byte == b'\'' {
+            // A single quote cannot go inside single quotes, so the whole thing
+            // takes double quotes instead.
+            return double_quote_meta(text);
+        }
+        if is_control(byte) {
+            if !run.is_empty() {
+                out.push('\'');
+                out.push_str(&run);
+                out.push('\'');
+                run.clear();
+            }
+            out.push_str(&format!("$'{}'", control_name(byte)));
+            continue;
+        }
+        run.push(char::from(byte));
+    }
+    if !run.is_empty() {
+        out.push('\'');
+        out.push_str(&run);
+        out.push('\'');
+    }
+    out
+}
+
+fn double_quote_meta(text: &str) -> String {
+    let open = if fancy_quotes() { "\u{2018}" } else { "\"" };
+    let close = if fancy_quotes() { "\u{2019}" } else { "\"" };
+    let mut out = String::from(open);
+    for &byte in text.as_bytes() {
+        if is_control(byte) {
+            out.push_str(&format!("$'{}'", control_name(byte)));
+        } else {
+            out.push(char::from(byte));
+        }
+    }
+    out.push_str(close);
+    out
+}
+
+/// The characters that make a shell word unsafe to print bare.
+fn needs_meta(text: &str) -> bool {
+    if text.is_empty() {
+        return true;
+    }
+    text.bytes().any(|b| {
+        is_control(b)
+            || matches!(
+                b,
+                b' ' | b'!' | b'"' | b'$' | b'\'' | b'&' | b'(' | b')' | b'*' | b'<' | b'>' | b'?'
+                    | b'[' | b']' | b'`' | b'^' | b'\\' | b';' | b'|'
+            )
+    })
+}
+
+fn is_control(byte: u8) -> bool {
+    byte < 0x20 || byte == 0x7f
+}
+
+fn control_name(byte: u8) -> String {
+    match byte {
+        b'\n' => "\\n".to_string(),
+        b'\t' => "\\t".to_string(),
+        b'\r' => "\\r".to_string(),
+        b'\x0C' => "\\x0C".to_string(),
+        _ => format!("\\{:03o}", byte),
     }
 }

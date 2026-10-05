@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "b2sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
 name = "basename"
 version = "0.1.0"
 dependencies = [
@@ -18,6 +25,22 @@ name = "cat"
 version = "0.1.0"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "checksums"
+version = "0.1.0"
+dependencies = [
+ "hashes",
+ "libc",
+ "quoting",
+]
+
+[[package]]
+name = "cksum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
 ]
 
 [[package]]
@@ -127,6 +150,13 @@ name = "lscpu"
 version = "0.1.0"
 
 [[package]]
+name = "md5sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
 name = "mkdir"
 version = "0.1.0"
 dependencies = [
@@ -202,10 +232,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha1sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
+name = "sha224sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
+name = "sha256sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
+name = "sha384sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
+name = "sha512sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
+]
+
+[[package]]
 name = "sort"
 version = "0.1.0"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "sum"
+version = "0.1.0"
+dependencies = [
+ "checksums",
 ]
 
 [[package]]

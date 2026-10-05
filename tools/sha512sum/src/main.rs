@@ -2,5 +2,5 @@ use checksums::run;
 
 fn main() -> std::process::ExitCode {
     let argv: Vec<String> = std::env::args().skip(1).collect();
-    std::process::exit(run(&checksums::tools::cksum(), &argv));
+    std::process::exit(run(&checksums::tools::sha512sum(), &argv));
 }

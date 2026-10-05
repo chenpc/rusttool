@@ -1,24 +1,21 @@
-CKSUM(1)                         User Commands                        CKSUM(1)
+B2SUM(1)                         User Commands                        B2SUM(1)
 
 NAME
-       cksum - compute and verify file checksums
+       b2sum - compute and check BLAKE2 message digest
 
 SYNOPSIS
-       cksum [OPTION]... [FILE]...
+       b2sum [OPTION]... [FILE]...
 
 DESCRIPTION
-       Print or verify checksums.  By default use the 32 bit CRC algorithm.
+       Print or check BLAKE2b (512-bit) checksums.
 
        With no FILE, or when FILE is -, read standard input.
 
        Mandatory arguments to long options are mandatory for short options
        too.
 
-       -a, --algorithm=TYPE
-              select the digest type to use.  See DIGEST below.
-
-       --base64
-              emit base64-encoded digests, not hexadecimal
+       -b, --binary
+              read in binary mode
 
        -c, --check
               read checksums from the FILEs and check them
@@ -27,12 +24,10 @@ DESCRIPTION
               digest length in bits; must not exceed the max for the blake2
               algorithm and must be a multiple of 8
 
-       --raw  emit a raw binary digest, not hexadecimal
+       --tag  create a BSD-style checksum
 
-       --tag  create a BSD-style checksum (the default)
-
-       --untagged
-              create a reversed style checksum, without digest type
+       -t, --text
+              read in text mode (default)
 
        -z, --zero
               end each output line with NUL, not newline, and disable file
@@ -54,43 +49,22 @@ DESCRIPTION
        -w, --warn
               warn about improperly formatted checksum lines
 
-       --debug
-              indicate which implementation used
-
        --help display this help and exit
 
        --version
               output version information and exit
 
-   DIGEST determines the digest algorithm and default output format:
-       sysv   (equivalent to sum -s)
+       The sums are computed as described in RFC 7693.  When checking, the
+       input should be a former output of this program.  The default mode is
+       to print a line with: checksum, a space, a character indicating input
+       mode ('*' for binary, ' ' for text or where binary is insignificant),
+       and name for each FILE.
 
-       bsd    (equivalent to sum -r)
-
-       crc    (equivalent to cksum)
-
-       md5    (equivalent to md5sum)
-
-       sha1   (equivalent to sha1sum)
-
-       sha224 (equivalent to sha224sum)
-
-       sha256 (equivalent to sha256sum)
-
-       sha384 (equivalent to sha384sum)
-
-       sha512 (equivalent to sha512sum)
-
-       blake2b
-              (equivalent to b2sum)
-
-       sm3    (only available through cksum)
-
-       When checking, the input should be a former output of this program, or
-       equivalent standalone program.
+       Note: There is no difference between binary mode and text mode on GNU
+       systems.
 
 AUTHOR
-       Written by Padraig Brady and Q. Frank Xia.
+       Written by Padraig Brady and Samuel Neves.
 
 REPORTING BUGS
        GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
@@ -103,7 +77,9 @@ COPYRIGHT
        There is NO WARRANTY, to the extent permitted by law.
 
 SEE ALSO
-       Full documentation <https://www.gnu.org/software/coreutils/cksum>
-       or available locally via: info '(coreutils) cksum invocation'
+       cksum(1)
 
-GNU coreutils 9.4                 August 2026                         CKSUM(1)
+       Full documentation <https://www.gnu.org/software/coreutils/b2sum>
+       or available locally via: info '(coreutils) b2sum invocation'
+
+GNU coreutils 9.4                 August 2026                         B2SUM(1)

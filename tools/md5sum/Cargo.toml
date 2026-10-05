@@ -1,8 +1,8 @@
 [package]
-name = "cksum"
+name = "md5sum"
 version = "0.1.0"
 edition = "2021"
-description = "Clone of GNU coreutils cksum(1)"
+description = "Clone of GNU coreutils md5sum(1)"
 
 [dependencies]
 checksums.workspace = true

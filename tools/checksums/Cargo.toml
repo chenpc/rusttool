@@ -1,0 +1,10 @@
+[package]
+name = "checksums"
+version = "0.1.0"
+edition = "2021"
+description = "The shape the *sum tools share: parse, digest, print, verify"
+
+[dependencies]
+hashes.workspace = true
+quoting.workspace = true
+libc.workspace = true

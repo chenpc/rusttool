@@ -2,17 +2,17 @@
 
 > 由 `qemu-test/harness/gen-manifest.sh` 產生，**不要手改**。
 > 來源是 oracle 所在 package 的檔案清單（`coreutils util-linux util-linux-extra mount fdisk bsdextrautils bsdmainutils`）交叉比對 `tools/`。
-> 生成時間：2026-10-05 05:30 UTC
+> 生成時間：2026-10-05 16:21 UTC
 
 ## 現況
 
 | 狀態 | 數量 |
 |---|---|
-| done（已實作，三層驗證另計） | 38 |
-| empty（有 crate 骨架但 0 bytes） | 27 |
-| todo（完全沒骨架） | 137 |
+| done（已實作，三層驗證另計） | 47 |
+| empty（有 crate 骨架但 0 bytes） | 26 |
+| todo（完全沒骨架） | 129 |
 | **合計** | **202** |
-| 還要做（empty + todo） | 164 |
+| 還要做（empty + todo） | 155 |
 
 `done` 只代表有程式碼。**真正結算以 `qemu-test/harness/final-tally.sh` 為準**：
 unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成。
@@ -40,7 +40,7 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 | todo | `addpart` | `addpart` | `/usr/bin/addpart` | no |
 | todo | `agetty` | `agetty` | `/usr/sbin/agetty` | no |
 | todo | `arch` | `uname` | `/usr/bin/arch` | no |
-| todo | `b2sum` | `b2sum` | `/usr/bin/b2sum` | no |
+| done | `b2sum` | `b2sum` | `/usr/bin/b2sum` | yes |
 | todo | `base32` | `base32` | `/usr/bin/base32` | no |
 | todo | `base64` | `base64` | `/usr/bin/base64` | no |
 | done | `basename` | `basename` | `/usr/bin/basename` | no |
@@ -60,7 +60,7 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 | todo | `chown` | `chown` | `/usr/bin/chown` | no |
 | todo | `chroot` | `chroot` | `/usr/sbin/chroot` | no |
 | todo | `chrt` | `chrt` | `/usr/bin/chrt` | no |
-| empty | `cksum` | `cksum` | `/usr/bin/cksum` | yes |
+| done | `cksum` | `cksum` | `/usr/bin/cksum` | yes |
 | done | `col` | `col` | `/usr/bin/col` | no |
 | done | `colcrt` | `colcrt` | `/usr/bin/colcrt` | no |
 | done | `colrm` | `colrm` | `/usr/bin/colrm` | no |
@@ -133,7 +133,7 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 | todo | `lsmem` | `lsmem` | `/usr/bin/lsmem` | no |
 | todo | `lsns` | `lsns` | `/usr/bin/lsns` | no |
 | empty | `mcookie` | `mcookie` | `/usr/bin/mcookie` | no |
-| todo | `md5sum` | `md5sum` | `/usr/bin/md5sum` | yes |
+| done | `md5sum` | `md5sum` | `/usr/bin/md5sum` | yes |
 | todo | `mesg` | `mesg` | `/usr/bin/mesg` | no |
 | done | `mkdir` | `mkdir` | `/usr/bin/mkdir` | no |
 | todo | `mkfifo` | `mkfifo` | `/usr/bin/mkfifo` | no |
@@ -184,11 +184,11 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 | empty | `setsid` | `setsid` | `/usr/bin/setsid` | no |
 | todo | `setterm` | `setterm` | `/usr/bin/setterm` | no |
 | todo | `sfdisk` | `sfdisk` | `/usr/sbin/sfdisk` | no |
-| todo | `sha1sum` | `sha1sum` | `/usr/bin/sha1sum` | no |
-| todo | `sha224sum` | `sha224sum` | `/usr/bin/sha224sum` | no |
-| todo | `sha256sum` | `sha256sum` | `/usr/bin/sha256sum` | no |
-| todo | `sha384sum` | `sha384sum` | `/usr/bin/sha384sum` | no |
-| todo | `sha512sum` | `sha512sum` | `/usr/bin/sha512sum` | no |
+| done | `sha1sum` | `sha1sum` | `/usr/bin/sha1sum` | yes |
+| done | `sha224sum` | `sha224sum` | `/usr/bin/sha224sum` | no |
+| done | `sha256sum` | `sha256sum` | `/usr/bin/sha256sum` | yes |
+| done | `sha384sum` | `sha384sum` | `/usr/bin/sha384sum` | no |
+| done | `sha512sum` | `sha512sum` | `/usr/bin/sha512sum` | yes |
 | todo | `shred` | `shred` | `/usr/bin/shred` | no |
 | todo | `shuf` | `shuf` | `/usr/bin/shuf` | no |
 | todo | `sleep` | `sleep` | `/usr/bin/sleep` | no |
@@ -199,7 +199,7 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 | todo | `stty` | `stty` | `/usr/bin/stty` | no |
 | todo | `su` | `su` | `/usr/bin/su` | no |
 | todo | `sulogin` | `sulogin` | `/usr/sbin/sulogin` | no |
-| todo | `sum` | `sum` | `/usr/bin/sum` | no |
+| done | `sum` | `sum` | `/usr/bin/sum` | yes |
 | todo | `swaplabel` | `swaplabel` | `/usr/sbin/swaplabel` | no |
 | todo | `swapoff` | `swapoff` | `/usr/sbin/swapoff` | no |
 | todo | `swapon` | `swapon` | `/usr/sbin/swapon` | no |
@@ -245,6 +245,7 @@ unit + differential 逐位元組 + QEMU guest + fuzzer 四項全綠才算完成�
 （`quoting`/`hashes` 是共用模組，不是工具）：
 
 - `bits`
+- `checksums`
 - `hashes`
 - `line`
 - `quoting`

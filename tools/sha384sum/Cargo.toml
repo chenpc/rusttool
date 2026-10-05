@@ -1,8 +1,8 @@
 [package]
-name = "cksum"
+name = "sha384sum"
 version = "0.1.0"
 edition = "2021"
-description = "Clone of GNU coreutils cksum(1)"
+description = "Clone of GNU coreutils sha384sum(1)"
 
 [dependencies]
 checksums.workspace = true
